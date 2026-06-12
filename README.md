@@ -19,7 +19,7 @@ Projects exploring financial markets through data analysis and quantitative meth
 ## Projects
 | Project | Description | Status |
 |---------|-------------|--------|
-| Momentum Strategy | Rolling 5-year momentum strategy | 🔄 In progress |
+| momentum_strategy.py | Rolling 5-year momentum strategy | 🔄 In progress |
 
 ## Setup
 ```bash
