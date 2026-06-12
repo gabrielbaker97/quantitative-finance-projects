@@ -9,6 +9,7 @@ from tqdm import tqdm
 import urllib.request
 import zipfile
 import requests
+from dotenv import load_dotenv
 
 start_date = "2000-01-01"
 end_date = "2026-06-10"
@@ -112,6 +113,13 @@ ff3_monthly = (
 
 # ── Macro data from FRED ──────────────────────────────────────────────────
 from fredapi import Fred
+FRED_API_KEY = os.getenv("FRED_API_KEY")
+
+if FRED_API_KEY is None:
+    raise ValueError(
+        "Please set the FRED_API_KEY in environment variable"
+    )
+
 fred = Fred(api_key="")
 
 fred_series = {

@@ -7,6 +7,9 @@ Projects exploring financial markets through data analysis and quantitative meth
 - Asset pricing and return analysis
 - Financial data pipelines
 
+## Data
+- Data is collected from free online sources
+- 
 ## Projects
 | Project | Description | Status |
 |---------|-------------|--------|
