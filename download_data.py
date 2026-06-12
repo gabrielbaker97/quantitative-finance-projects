@@ -10,7 +10,7 @@ import urllib.request
 import zipfile
 import requests
 
-start_date = "2015-01-01"
+start_date = "2000-01-01"
 end_date = "2026-06-10"
 
 constituents = tf.download_data(domain="constituents", index="S&P 500")
@@ -86,30 +86,29 @@ shares_monthly = (
 
 # ── Fama French Data ──────────────────────────────────────────────────
 url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
-urllib.request.urlretrieve(url, "fama_french.zip")
 
-with zipfile.ZipFile("fama_french.zip", "r") as zf:
-    zf.extractall()
+zip_path = "data/fama_french.zip"
+csv_path = "data/F-F_Research_Data_Factors.CSV"
+
+urllib.request.urlretrieve(url, zip_path)
+
+with zipfile.ZipFile(zip_path, "r") as zf:
+    zf.extractall("data")
 
 factor_cols = ["Mkt-RF", "SMB", "HML", "RF"]
 
 ff3_monthly = (
-    pd.read_csv("F-F_Research_Data_Factors.CSV", skiprows=3)
+    pd.read_csv(csv_path, skiprows=3)
     .loc[lambda df: df.iloc[:, 0].astype(str).str.match(r"^\d{6}$")]
     .rename(columns=lambda c: "date" if c == "Unnamed: 0" else c)
     .assign(
         date=lambda df: pd.to_datetime(df["date"], format="%Y%m") + MonthEnd(0),
-        **{col: lambda df, col=col: df[col].astype(float) / 100
-           for col in factor_cols}
+        **{
+            col: lambda df, col=col: df[col].astype(float) / 100
+            for col in factor_cols
+        }
     )
-    .set_index("date")
 )
-
-# ── Save data ───────────────────────────────────────────────────────────────────
-os.makedirs("data", exist_ok=True)
-shares_monthly.to_parquet("data/shares_outstanding.parquet", index=False)
-returns_monthly.to_parquet("data/returns_monthly.parquet", index=False)
-ff3_monthly.to_parquet("data/ff3_monthly.parquet", index=False)
 
 # ── Macro data from FRED ──────────────────────────────────────────────────
 from fredapi import Fred
@@ -149,11 +148,10 @@ print(macro.head())
     .sort_values("n_missing", ascending=False)
 )
 
-import matplotlib.pyplot as plt
+# ── Save data ───────────────────────────────────────────────────────────────────
+os.makedirs("data", exist_ok=True)
+shares_monthly.to_parquet("data/shares_monthly.parquet", index=False)
+returns_monthly.to_parquet("data/returns_monthly.parquet", index=False)
+ff3_monthly.to_parquet("data/ff3_monthly.parquet", index=False)
 
-(
-    macro
-    .set_index("date")
-    ["term_spread"]
-    .plot(figsize=(10, 4), title="US Treasury Term Spread")
-)
+

@@ -11,7 +11,7 @@ to show how the strategy behaves across different market regimes:
   2020–2024: COVID crash, recovery, rate hike cycle
   2021–2026: (partial overlap for recency)
 
-Each period produces its own plot saved as e.g. "data/momentum_2000_2004.png"
+Each period produces its own plot saved as e.g. "results/momentum_2000_2004.png"
 """
 
 import pandas as pd
@@ -257,7 +257,7 @@ def make_plot(results, stats, start_year, end_year):
     ax.xaxis.set_major_locator(mdates.YearLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     plt.tight_layout()
-    fname = f"data/momentum_{start_year}_{end_year}.png"
+    fname = f"results/momentum_{start_year}_{end_year}.png"
     plt.savefig(fname, dpi=150)
     plt.close()
     print(f"  Saved {fname}")
@@ -287,7 +287,7 @@ cols = [
 print("\n\n── Cross-Period Summary ──────────────────────────────────────────────")
 print(summary[cols].round(3).to_string())
 
-summary[cols].round(3).to_csv("data/momentum_summary.csv")
-print("\nSummary saved to data/momentum_summary.csv")
+summary[cols].round(3).to_csv("results/momentum_summary.csv")
+print("\nSummary saved to results/momentum_summary.csv")
 
 # Summary
