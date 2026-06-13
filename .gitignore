@@ -2,3 +2,6 @@
 
 # Secrets 
 .env
+
+# Local data
+data/

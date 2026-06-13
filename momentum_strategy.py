@@ -22,20 +22,16 @@ import statsmodels.api as sm
 from pandas.tseries.offsets import MonthEnd
 
 # ── 0. Load data ──────────────────────────────────────────────────────────────
-returns_monthly = pd.read_parquet("data/returns_monthly.parquet")
-shares_monthly  = pd.read_parquet("data/shares_monthly.parquet")
-ff3_monthly     = pd.read_parquet("data/ff3_monthly.parquet")
+crsp_monthly = pd.read_parquet("data/crsp_monthly.parquet")
+ff3_monthly  = pd.read_parquet("data/ff3_monthly.parquet")
 
-returns_monthly["date"] = pd.to_datetime(returns_monthly["date"])
-shares_monthly["date"]  = pd.to_datetime(shares_monthly["date"])
-ff3_monthly["date"]     = pd.to_datetime(ff3_monthly["date"])
-
-returns_monthly = returns_monthly.sort_values(["symbol", "date"])
+crsp_monthly["date"] = pd.to_datetime(crsp_monthly["date"]) + MonthEnd(0)
+ff3_monthly["date"]  = pd.to_datetime(ff3_monthly["date"])
 
 # ── 1. Compute momentum signal once on full sample ────────────────────────────
 # 12-2 momentum: cumulative return t-12 to t-2 (skip last month)
 def compute_momentum(df):
-    r = df["returns_monthly"]
+    r = df["ret"]
     mom = (
         (1 + r)
         .shift(1)
@@ -46,31 +42,31 @@ def compute_momentum(df):
     df["momentum"] = mom
     return df
 
-returns_monthly = (
-    returns_monthly
-    .groupby("symbol", group_keys=False)
-    .apply(compute_momentum)
+crsp_monthly = (
+    crsp_monthly
+    .groupby("permno", group_keys=False)
+    .apply(compute_momentum, include_groups=False)
+    .reset_index(level=0)  
 )
 
-# ── 2. Merge market cap ───────────────────────────────────────────────────────
-data_full = (
-    returns_monthly
-    .merge(shares_monthly, on=["symbol", "date"], how="left")
-    .assign(
-        mktcap=lambda x: x["adj_close"] * x["shares_outstanding"],
-        mktcap_lag=lambda x: x.groupby("symbol")["mktcap"].shift(1),
-    )
-    .dropna(subset=["momentum", "returns_monthly", "mktcap_lag"])
-)
+# ── 2. Prepare full dataset ───────────────────────────────────────────────────
+data_full = crsp_monthly.dropna(subset=["momentum", "ret", "mktcap_lag"]).copy()
+
+coverage = data_full["mktcap_lag"].notna().mean()
+print(f"Market cap coverage: {coverage:.1%}")
+print(f"Date range: {data_full['date'].min().date()} to {data_full['date'].max().date()}")
+print(f"Total stock-months: {len(data_full):,}")
 
 # ── 3. Define 5-year windows ──────────────────────────────────────────────────
 windows = [
+    ("1990", "1994"),
+    ("1995", "1999"),
     ("2000", "2004"),
     ("2005", "2009"),
     ("2010", "2014"),
     ("2015", "2019"),
     ("2020", "2024"),
-    ("2022", "2026"),  # most recent partial window
+    ("2022", "2026"),
 ]
 
 # ── 4. Helper functions ───────────────────────────────────────────────────────
@@ -86,21 +82,20 @@ def assign_deciles(df):
 def vw_return(df):
     """Value-weighted return, falls back to equal-weight if mktcap unavailable."""
     if df["mktcap_lag"].isna().all():
-        return df["returns_monthly"].mean()
+        return df["ret"].mean()
     w = df["mktcap_lag"].fillna(0)
     if w.sum() == 0:
-        return df["returns_monthly"].mean()
+        return df["ret"].mean()
     w = w / w.sum()
-    return (w * df["returns_monthly"]).sum()
+    return (w * df["ret"]).sum()
 
 def run_window(data, ff3, start_year, end_year):
-    """Run full momentum analysis for a given date window."""
-
     mask = (
         (data["date"] >= f"{start_year}-01-01") &
         (data["date"] <= f"{end_year}-12-31")
     )
     d = data[mask].copy()
+    ...
 
     if len(d) < 100:
         print(f"  Skipping {start_year}-{end_year}: insufficient data")
@@ -132,13 +127,18 @@ def run_window(data, ff3, start_year, end_year):
         return None
 
     port_wide["WML"] = port_wide["D10"] - port_wide["D1"]
+    port_wide.index = pd.to_datetime(port_wide.index) + MonthEnd(0)
 
+    print(f"  port_wide date range: {port_wide.index.min()} to {port_wide.index.max()}")
+    print(f"  port_wide shape: {port_wide.shape}")
+    print(f"  ff3 date range in window: {ff3[(ff3['date'] >= f'{start_year}-01-01') & (ff3['date'] <= f'{end_year}-12-31')]['date'].min()} to {ff3[(ff3['date'] >= f'{start_year}-01-01') & (ff3['date'] <= f'{end_year}-12-31')]['date'].max()}")
     # Merge FF3
     results = (
         port_wide.reset_index()
         .merge(ff3, on="date", how="inner")
         .dropna()
     )
+    print(f"  {start_year}-{end_year}: {len(results)} months after FF3 merge")
 
     for col in [f"D{i}" for i in range(1, 11) if f"D{i}" in results.columns] + ["WML"]:
         results[f"{col}_excess"] = results[col] - results["RF"]
@@ -287,7 +287,6 @@ cols = [
 print("\n\n── Cross-Period Summary ──────────────────────────────────────────────")
 print(summary[cols].round(3).to_string())
 
-summary[cols].round(3).to_csv("results/momentum_summary.csv")
+summary[cols].round(3).to_csv("results/momentum_summary.csv", float_format="%.3f")
 print("\nSummary saved to results/momentum_summary.csv")
 
-# Summary

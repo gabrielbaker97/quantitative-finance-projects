@@ -1,4 +1,5 @@
 import os
+from fredapi import Fred
 import tidyfinance as tf
 import pandas_datareader as pdr
 import yfinance as yf
@@ -11,79 +12,8 @@ import zipfile
 import requests
 from dotenv import load_dotenv
 
-start_date = "2000-01-01"
-end_date = "2026-06-10"
-
-constituents = tf.download_data(domain="constituents", index="S&P 500")
-symbols = constituents["symbol"].tolist()
-
-# ── Prices ──────────────────────────────────────────────────
-
-prices_raw = tf.download_data(
-    domain="stock_prices",
-    symbols = symbols,
-    start_date=start_date,
-    end_date=end_date
-)
-
-prices = (
-    prices_raw
-    .assign(date=lambda x: pd.to_datetime(x["date"]))
-    .sort_values(["symbol", "date"])
-)
-
-prices_monthly = (
-    prices
-    .groupby("symbol")
-    .resample("ME", on="date")
-    .agg(
-        adj_close=("adjusted_close", "last"),
-        volume=("volume", "sum"),
-    )
-    .reset_index()
-)
-
-returns_monthly = (
-    prices_monthly
-    .assign(returns_monthly = lambda df: df['adj_close'].pct_change())
-    .dropna()
-)
-
-# ── Market Capitalization ──────────────────────────────────────────────────
-shares_list = []
-
-for symbol in tqdm(symbols, desc="Downloading shares outstanding"):
-    try:
-        ticker = yf.Ticker(symbol)
-        shares = ticker.get_shares_full(start=start_date, end=end_date)
-
-        if shares is not None and not shares.empty:
-            df = shares.reset_index()
-            df.columns = ["date", "shares_outstanding"]
-            df["symbol"] = symbol
-            shares_list.append(df)
-
-    except Exception as e:
-        print(f"Failed for {symbol}: {e}")
-
-shares_df = pd.concat(shares_list, ignore_index=True)
-
-def remove_timezones(d):
-    d = pd.to_datetime(d)
-    if d.tzinfo is not None: 
-        return d.tz_convert(None)
-    return d
-
-shares_df["date"] = shares_df["date"].apply(remove_timezones)
-
-shares_monthly = (
-    shares_df
-    .sort_values(["symbol", "date"])
-    .groupby("symbol")
-    .resample("ME", on="date")
-    .agg(shares_outstanding=("shares_outstanding", "last"))
-    .reset_index()
-)
+start_date = "1960-02-01"
+end_date = "2024-12-01"
 
 # ── Fama French Data ──────────────────────────────────────────────────
 url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
@@ -112,7 +42,6 @@ ff3_monthly = (
 )
 
 # ── Macro data from FRED ──────────────────────────────────────────────────
-from fredapi import Fred
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 if FRED_API_KEY is None:
@@ -120,7 +49,7 @@ if FRED_API_KEY is None:
         "Please set the FRED_API_KEY in environment variable"
     )
 
-fred = Fred(api_key="")
+fred = Fred(api_key=FRED_API_KEY)
 
 fred_series = {
     "DGS10": "treasury_10y",
@@ -158,8 +87,8 @@ print(macro.head())
 
 # ── Save data ───────────────────────────────────────────────────────────────────
 os.makedirs("data", exist_ok=True)
-shares_monthly.to_parquet("data/shares_monthly.parquet", index=False)
-returns_monthly.to_parquet("data/returns_monthly.parquet", index=False)
 ff3_monthly.to_parquet("data/ff3_monthly.parquet", index=False)
+macro.to_parquet("data/macro.parquet", index=False)
+
 
 

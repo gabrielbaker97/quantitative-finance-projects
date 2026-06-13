@@ -8,7 +8,9 @@ Projects exploring financial markets through data analysis and quantitative meth
 - Financial data pipelines
 
 ## Data
-- Data is collected from free online sources
+- CRSP data
+- Data from Kenneth French's websit
+- FRED data
 
 ### FRED API setup
 1. Obtain a FRED API key.
