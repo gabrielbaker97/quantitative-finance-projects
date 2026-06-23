@@ -26,4 +26,13 @@ Each period produces its own plot saved as e.g. "results/momentum_2000_2004.png"
 | 2020–2024 | 24.5          | 0.55       | 0.68           | -65.0            | 3.19          | 3.16   | 2.53         | 3.23  | 0.47   |
 | 2022–2026 | 45.4          | 1.09       | 0.32           | -44.3            | 4.12          | 3.78   | 2.60         | 2.27  | 0.55   |
 
-FF3 alpha is positive in all periods but statistically insignificant during the dot-com reversal (2000–2004) and pre-crisis bull run and 2008 financial crisis  (2005–2009). Drawdowns of 73% and 86% make the gross returns uninvestable in practice. The 2020–2024 and 2022–2026 windows show the strongest alpha in the sample (FF3 t > 3), likely driven by concentration in large-cap technology, with rising FF3 $R^2$ suggesting increasing factor exposure. The 2022–2026 window overlaps substantially with 2020–2024 and should not be treated as an independent observation. All returns are gross of transaction costs. Alphas estimated via OLS with HAC standard errors (6 lags).
+FF3 alpha is positive in all periods but statistically insignificant during the dot-com reversal (2000–2004) and pre-crisis bull run and 2008 financial crisis  (2005–2009). Drawdowns of 73% and 86% make the gross returns uninvestable in practice. The 2020–2024 and 2022–2026 windows show the strongest alpha in the sample (FF3 t > 3), likely driven by concentration in large-cap technology, with rising FF3 $R^2$ suggesting increasing factor exposure. The 2022–2026 window overlaps substantially with 2020–2024 and should not be treated as an independent observation. All returns are gross of transaction costs. 
+
+## Methodology 
+Stocks are sorted monthly into deciles by 12-2 momentum (cumulative return from T-12 to T-2, skipping the most recent month to avoid short-term reversal). Decile portfolios are value-weighted. The WML factor is constructed as D10 minnus D1. CAPM and FF3 alphas are estimated via OLS. 
+
+## Data
+ - CRSP 
+ - Ken French FF3 factors via the French data library
+
+ 
