@@ -6,6 +6,7 @@ Projects exploring financial markets through data analysis and quantitative meth
 - Market monitoring and analysis
 - Asset pricing and return analysis
 - Financial data pipelines
+- Asset allocation
 
 ## Data
 - CRSP data
@@ -15,14 +16,14 @@ Projects exploring financial markets through data analysis and quantitative meth
 ### FRED API setup
 1. Obtain a FRED API key.
 2. Copy `.env.example` to `.env`.
-3. Add own API key:
+3. Add own API key.
 
 
 ## Projects
 | Project | Status |
 |-----------------|
 | Rolling 5-year momentum strategy | Done |
-| SAA vs. TAA | In progress |
+| Strategic vs. Tactical Asset Allocation | In progress |
 
 
 ## Setup
