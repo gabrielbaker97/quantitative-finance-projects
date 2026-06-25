@@ -25,7 +25,7 @@ Projects exploring financial markets through data analysis and quantitative meth
 | Rolling 5-year momentum strategy         | momentum_strategy | Done        |
 | Strategic vs. Tactical Asset Allocation  | saa_ta            | Done        |
 | Active Fund Decomposition                | fund_decomposition| In progress |
-
+| Black-Scholes Monte Carlo Pricing        | option_pricing    | In progress |
 
 ## Setup
 ```bash
