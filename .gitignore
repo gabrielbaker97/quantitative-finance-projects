@@ -4,4 +4,6 @@
 .env
 
 # Local data
-data/
+data/.env
+.DS_Store
+**/.DS_Store
