@@ -24,8 +24,8 @@ Projects exploring financial markets through data analysis and quantitative meth
 |------------------------------------------|----------------------|-------------|
 | Rolling 5-year momentum strategy         | momentum_strategy    | Done        |
 | Strategic vs. Tactical Asset Allocation  | saa_taa              | Done        |
-| Fundamental Analysis (DSV)               | fundamental-analysis | Done        |
-| Live Crypto TAA                          | live-taa             | Done        |
+| Fundamental Analysis (DSV)               | fundamental-analysis | In progress |
+| Live Crypto TAA                          | live-taa             | In progress |
 | Active Fund Decomposition                | fund_decomposition   | In progress |
 
 ## Setup
