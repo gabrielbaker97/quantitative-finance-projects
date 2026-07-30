@@ -33,7 +33,7 @@ data_client    = CryptoHistoricalDataClient()
 
 # Data
 def fetch_prices(symbols: list[str], lookback_days: int = 80) -> pd.DataFrame:
-    """Hent daglige lukkekurser for crypto-symboler."""
+    """Fetch daily closing prices for crypto symbols."""
     end   = datetime.now(UTC)
     start = end - timedelta(days=lookback_days + 10)
 
@@ -75,13 +75,13 @@ def get_current_positions() -> dict[str, float]:
 
 # Order
 def liquidate(symbol: str) -> None:
-    # Alpaca bruger "BTCUSD" (uden slash) i positions
+    # Alpaca uses "BTCUSD" (no slash) in positions
     symbol_clean = symbol.replace("/", "")
     try:
         trading_client.close_position(symbol_clean)
         print(f"  LIQUIDATE  {symbol}")
     except Exception as exc:
-        print(f"  [!] Kunne ikke lukke {symbol}: {exc}")
+        print(f"  [!] Could not close {symbol}: {exc}")
 
 
 def place_order(symbol: str, notional: float, side: OrderSide) -> None:
@@ -91,7 +91,7 @@ def place_order(symbol: str, notional: float, side: OrderSide) -> None:
         symbol=symbol,
         notional=round(notional, 2),
         side=side,
-        time_in_force=TimeInForce.GTC,   # GTC — ingen lukketid for crypto
+        time_in_force=TimeInForce.GTC,   # GTC — no closing time for crypto
     )
     trading_client.submit_order(order)
     direction = "BUY " if side == OrderSide.BUY else "SELL"
@@ -101,8 +101,8 @@ def place_order(symbol: str, notional: float, side: OrderSide) -> None:
 # Rebalance
 def rebalance(signals: pd.Series) -> None:
     """
-    Equal weight pr. long-aktiv.
-    Off-signal coins sælges og lades som USD cash i kontoen.
+    Equal weight per long asset.
+    Off-signal coins are sold and left as USD cash in the account.
     """
     portfolio_value = get_portfolio_value()
     current         = get_current_positions()
@@ -110,7 +110,7 @@ def rebalance(signals: pd.Series) -> None:
     long_pairs = [t for t, s in signals.items() if s]
 
     if not long_pairs:
-        print("  Ingen long-signaler — lukker alle positioner, holder USD cash.")
+        print("  No long signals — closing all positions, holding USD cash.")
         for sym in list(current.keys()):
             liquidate(sym)
         return
@@ -134,7 +134,7 @@ def rebalance(signals: pd.Series) -> None:
         elif diff < -MIN_TRADE:
             place_order(sym_orig, abs(diff), OrderSide.SELL)
         else:
-            print(f"  HOLD       {sym_orig:12s}  (Δ${diff:+.0f}, inden for tolerance)")
+            print(f"  HOLD       {sym_orig:12s}  (Δ${diff:+.0f}, within tolerance)")
 
 
 # Logging
@@ -172,28 +172,28 @@ def run() -> None:
 
     all_symbols = UNIVERSE
 
-    print(f"\n[1/4] Henter priser (SMA-{SMA_WINDOW} lookback)...")
+    print(f"\n[1/4] Fetching prices (SMA-{SMA_WINDOW} lookback)...")
     prices = fetch_prices(all_symbols, lookback_days=SMA_WINDOW + 10)
-    print(f"      {len(prices)} dage hentet for {len(all_symbols)} coins")
+    print(f"      {len(prices)} days fetched for {len(all_symbols)} coins")
 
-    print(f"\n[2/4] Beregner SMA-{SMA_WINDOW} signaler...")
+    print(f"\n[2/4] Computing SMA-{SMA_WINDOW} signals...")
     signals = compute_signals(prices[UNIVERSE], window=SMA_WINDOW)
     for ticker, sig in signals.items():
         px  = prices[ticker].iloc[-1]
         sma = prices[ticker].rolling(SMA_WINDOW).mean().iloc[-1]
         flag = "LONG ▲" if sig else "CASH  ▼"
-        print(f"  {ticker:12s}  {flag}   kurs={px:>10.2f}  SMA={sma:>10.2f}")
+        print(f"  {ticker:12s}  {flag}   price={px:>10.2f}  SMA={sma:>10.2f}")
 
-    print(f"\n[3/4] Rebalancerer ({signals.sum()} long, {(~signals).sum()} i cash)...")
+    print(f"\n[3/4] Rebalancing ({signals.sum()} long, {(~signals).sum()} in cash)...")
     rebalance(signals)
 
-    print("\n[4/4] Logger tilstand...")
+    print("\n[4/4] Logging state...")
     log_state(signals, prices)
 
     account = trading_client.get_account()
-    print(f"\n  Porteføljeværdi : ${float(account.portfolio_value):>12,.2f}")
-    print(f"  Likvide midler  : ${float(account.cash):>12,.2f}")
-    print(f"\nFærdig. Log gemt → {RESULTS_DIR}/signal_log.csv\n")
+    print(f"\n  Portfolio value : ${float(account.portfolio_value):>12,.2f}")
+    print(f"  Cash            : ${float(account.cash):>12,.2f}")
+    print(f"\nDone. Log saved → {RESULTS_DIR}/signal_log.csv\n")
 
 
 if __name__ == "__main__":

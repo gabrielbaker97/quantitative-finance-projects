@@ -1,5 +1,5 @@
 # Cross-Sectional Momentum Strategy — Rolling 5-Year Windows
-Backtests a standard 12-2 cross-sectional momentum strategy on US equities across 5 year windows, using CRSP monthly returns and Ken French FF3 factors. The rolling structure is designed to show how momentum alpha, Sharpe ratio, and drawdown profile vary across distinct market regimes rather the averaging across them. 
+Backtests a standard 12-2 cross-sectional momentum strategy on US equities across 5 year windows, using CRSP monthly returns and Ken French FF3 factors. The rolling structure is designed to show how momentum alpha, Sharpe ratio, and drawdown profile vary across distinct market regimes rather than averaging across them. 
 
 ## Covered periods:
     1990-1994: Early 90s recession and recovery
@@ -29,7 +29,7 @@ Each period produces its own plot saved as e.g. "results/momentum_2000_2004.png"
 > FF3 alpha is positive in all periods but statistically insignificant during the dot-com reversal (2000–2004) and pre-crisis bull run and 2008 financial crisis  (2005–2009). Drawdowns of 73% and 86% make the gross returns uninvestable in practice. The 2020–2024 and 2022–2026 windows show the strongest alpha in the sample (FF3 t > 3), likely driven by concentration in large-cap technology, with rising FF3 $R^2$ suggesting increasing factor exposure. The 2022–2026 window overlaps substantially with 2020–2024 and should not be treated as an independent observation. All returns are gross of transaction costs. 
 
 ## Methodology 
-Stocks are sorted monthly into deciles by 12-2 momentum (cumulative return from T-12 to T-2, skipping the most recent month to avoid short-term reversal). Decile portfolios are value-weighted. The WML factor is constructed as D10 minnus D1. CAPM and FF3 alphas are estimated via OLS. 
+Stocks are sorted monthly into deciles by 12-2 momentum (cumulative return from T-12 to T-2, skipping the most recent month to avoid short-term reversal). Decile portfolios are value-weighted. The WML factor is constructed as D10 minus D1. CAPM and FF3 alphas are estimated via OLS. 
 
 ## Data
  - CRSP 

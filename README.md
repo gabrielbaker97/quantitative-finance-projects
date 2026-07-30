@@ -20,16 +20,17 @@ Projects exploring financial markets through data analysis and quantitative meth
 
 
 ## Projects
-| Project                                  | Folder            | Status      |
-|------------------------------------------|-------------------|-------------|
-| Rolling 5-year momentum strategy         | momentum_strategy | Done        |
-| Strategic vs. Tactical Asset Allocation  | saa_ta            | Done        |
-| Active Fund Decomposition                | fund_decomposition| In progress |
-| Black-Scholes Monte Carlo Pricing        | option_pricing    | In progress |
+| Project                                  | Folder               | Status      |
+|------------------------------------------|----------------------|-------------|
+| Rolling 5-year momentum strategy         | momentum_strategy    | Done        |
+| Strategic vs. Tactical Asset Allocation  | saa_taa              | Done        |
+| Fundamental Analysis (DSV)               | fundamental-analysis | Done        |
+| Live Crypto TAA                          | live-taa             | Done        |
+| Active Fund Decomposition                | fund_decomposition   | In progress |
 
 ## Setup
 ```bash
-git clone https://github.com/gabrielbaker97/Projects.git
-cd Projects
+git clone https://github.com/gabrielbaker97/quantitative-finance-projects.git
+cd quantitative-finance-projects
 uv sync
 ```
