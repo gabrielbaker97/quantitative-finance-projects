@@ -10,18 +10,20 @@ load_dotenv()
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
+from alpaca.common.exceptions import APIError
 from alpaca.data.historical.crypto import CryptoHistoricalDataClient
 from alpaca.data.requests import CryptoBarsRequest
 from alpaca.data.timeframe import TimeFrame
 
-# Setup 
+# Setup
 API_KEY    = os.environ.get("ALPACA_API_KEY")
 API_SECRET = os.environ.get("ALPACA_API_SECRET")
 PAPER      = True
 
-UNIVERSE   = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD"]
-SMA_WINDOW = 50          
-MIN_TRADE  = 1.0         
+UNIVERSE     = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD"]
+SMA_WINDOW   = 50
+MIN_TRADE    = 1.0
+CASH_BUFFER  = 0.98
 
 RESULTS_DIR = "live-taa/results/live_crypto_taa"
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -93,7 +95,11 @@ def place_order(symbol: str, notional: float, side: OrderSide) -> None:
         side=side,
         time_in_force=TimeInForce.GTC,   # GTC — no closing time for crypto
     )
-    trading_client.submit_order(order)
+    try:
+        trading_client.submit_order(order)
+    except APIError as exc:
+        print(f"  [!] Order rejected for {symbol}: {exc}")
+        return
     direction = "BUY " if side == OrderSide.BUY else "SELL"
     print(f"  {direction}  {symbol:12s}  ${notional:>10,.2f}")
 
@@ -115,7 +121,7 @@ def rebalance(signals: pd.Series) -> None:
             liquidate(sym)
         return
 
-    per_asset = portfolio_value / len(signals)   
+    per_asset = portfolio_value / len(signals) * CASH_BUFFER
     targets   = {t: per_asset for t in long_pairs}
 
     current_clean = {k.replace("/", ""): (k, v) for k, v in current.items()}
