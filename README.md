@@ -1,6 +1,6 @@
 # Finance Projects
 
-Projects exploring financial markets through data analysis and quantitative methods.
+Projects exploring financial markets through data analysis and quantitative methods. 
 
 ## Topics
 - Market monitoring and analysis
@@ -34,3 +34,4 @@ git clone https://github.com/gabrielbaker97/quantitative-finance-projects.git
 cd quantitative-finance-projects
 uv sync
 ```
+Not investment advice.
